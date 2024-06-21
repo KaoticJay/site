@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .result {
+            width: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 100px; /* Espaçamento entre a div de informações e o quadrado cinza */
+        }
+        .info {
+            display: flex;
+            flex-direction: column;
+        }
+        .ultimas-senhas {
+            width: 250px;
+            background-color: #ccc;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            
+        }
+        .senha-item {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+        .dr {
+            font-size: 80px;
+            font-weight: bold;
+        }
+        .text {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="result">
+        <div class="info">
+            <div id="resultado"></div>
+        </div>
+        <div class="ultimas-senhas" id="ultimasSenhas">
+            <!-- As últimas senhas chamadas aparecerão aqui -->
+        </div>
+        <!-- Elemento de áudio para reprodução -->
+        <audio id="audio" src="som_senha.mp3"></audio>
+    </div>
+
+    <script>
+        // Definindo cores para cada médico
+        const cores = {
+            "Jane": "#ff0000",    // Vermelho
+            "Luana": "#0000ff",   // Azul
+            "Osmair": "#008000",  // Verde
+            "Amanda": "#ffa500",  // Laranja
+            "Arthur": "#800080",  // Roxo
+            "Andreia": "#ff00ff"  // Magenta
+        };
+
+        function atualizarDados() {
+            let dados = localStorage.getItem('dadosFormulario');
+            let ultimasSenhas = JSON.parse(localStorage.getItem('ultimasSenhas')) || [];
+
+            if (dados) {
+                dados = JSON.parse(dados);
+
+                // Atualiza o HTML com os dados
+                const resultadoDiv = document.getElementById('resultado');
+                resultadoDiv.innerHTML = `
+                    <div class="text">
+                        <div>
+                            <p class="sala" style="font-size: 79px">Sala: ${dados.sala}</p>
+                            <p style="font-size: 80px;">Senha: N° ${dados.senha}</p>
+                            <p class="dr" style="color: ${cores[dados.dr]}; font-size: 80px">Dr(a): ${dados.dr}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Adiciona a nova senha à lista de últimas senhas
+                ultimasSenhas.push({ senha: dados.senha, dr: dados.dr });
+                if (ultimasSenhas.length > 5) {
+                    ultimasSenhas.shift();
+                }
+
+                // Atualiza o localStorage com a nova lista de últimas senhas
+                localStorage.setItem('ultimasSenhas', JSON.stringify(ultimasSenhas));
+
+                // Exibe as últimas senhas
+                const ultimasSenhasDiv = document.getElementById('ultimasSenhas');
+                ultimasSenhasDiv.innerHTML = '';
+                ultimasSenhas.forEach(item => {
+                    const senhaItem = document.createElement('div');
+                    senhaItem.classList.add('senha-item');
+                    senhaItem.textContent = `Senha N° ${item.senha} - Dr(a): ${item.dr}`;
+                    ultimasSenhasDiv.appendChild(senhaItem);
+                });
+
+                // Reproduz o som
+                const audio = document.getElementById('audio');
+                audio.play();
+            }
+        }
+
+        // Chama a função para atualizar os dados quando a página carrega
+        window.onload = atualizarDados;
+
+        // Configura um evento para detectar alterações no localStorage
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'dadosFormulario') {
+                atualizarDados();
+            }
+        });
+
+        // Configura um evento para ouvir o evento personalizado 'dadosAtualizados'
+        window.addEventListener('dadosAtualizados', function() {
+            atualizarDados();
+        });
+    </script>
+</body>
+</html>
